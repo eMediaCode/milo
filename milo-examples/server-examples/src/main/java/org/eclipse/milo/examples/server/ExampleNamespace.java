@@ -130,6 +130,8 @@ public class ExampleNamespace implements Namespace {
     private final OpcUaServer server;
     private final UShort namespaceIndex;
 
+    private Double exampleDouble = 0.0;
+
     public ExampleNamespace(OpcUaServer server, UShort namespaceIndex) {
         this.server = server;
         this.namespaceIndex = namespaceIndex;
@@ -434,6 +436,148 @@ public class ExampleNamespace implements Namespace {
                     }
                 },
                 ValueLoggingDelegate::new
+            );
+
+            node.setAttributeDelegate(delegate);
+
+            server.getNodeMap().addNode(node);
+            dynamicFolder.addOrganizes(node);
+        }
+
+
+        // Monotonic increasing (Not working, this class seems to be instantiated each time)
+        if (exampleDouble > 10) {
+            exampleDouble = 0.0;
+        } else {
+            exampleDouble += 0.5;
+        }
+        {
+            String name = "DoubleB";
+            NodeId typeId = Identifiers.Double;
+            Variant variant = new Variant(1.0);
+
+            UaVariableNode node = new UaVariableNode.UaVariableNodeBuilder(server.getNodeMap())
+                    .setNodeId(new NodeId(namespaceIndex, "HelloWorld/Dynamic/" + name))
+                    .setAccessLevel(ubyte(AccessLevel.getMask(AccessLevel.READ_WRITE)))
+                    .setBrowseName(new QualifiedName(namespaceIndex, name))
+                    .setDisplayName(LocalizedText.english(name))
+                    .setDataType(typeId)
+                    .setTypeDefinition(Identifiers.BaseDataVariableType)
+                    .build();
+
+            node.setValue(new DataValue(variant));
+
+            AttributeDelegate delegate = AttributeDelegateChain.create(
+                    new AttributeDelegate() {
+                        @Override
+                        public DataValue getValue(AttributeContext context, VariableNode node) throws UaException {
+                            return new DataValue(new Variant(exampleDouble));
+                        }
+                    },
+                    ValueLoggingDelegate::new
+            );
+
+            node.setAttributeDelegate(delegate);
+
+            server.getNodeMap().addNode(node);
+            dynamicFolder.addOrganizes(node);
+        }
+
+        // 1 in 3 error
+        {
+            String name = "oneIn3";
+            NodeId typeId = Identifiers.Double;
+            Variant variant = new Variant(1.0);
+
+            UaVariableNode node = new UaVariableNode.UaVariableNodeBuilder(server.getNodeMap())
+                    .setNodeId(new NodeId(namespaceIndex, "HelloWorld/Dynamic/" + name))
+                    .setAccessLevel(ubyte(AccessLevel.getMask(AccessLevel.READ_WRITE)))
+                    .setBrowseName(new QualifiedName(namespaceIndex, name))
+                    .setDisplayName(LocalizedText.english(name))
+                    .setDataType(typeId)
+                    .setTypeDefinition(Identifiers.BaseDataVariableType)
+                    .build();
+
+            node.setValue(new DataValue(variant));
+
+            AttributeDelegate delegate = AttributeDelegateChain.create(
+                    new AttributeDelegate() {
+                        @Override
+                        public DataValue getValue(AttributeContext context, VariableNode node) throws UaException {
+                            double nextValue = random.nextDouble() / 10 + (random.nextDouble() < 0.33 ? 0.9 : 0);
+                            return new DataValue(new Variant(nextValue));
+                        }
+                    },
+                    ValueLoggingDelegate::new
+            );
+
+            node.setAttributeDelegate(delegate);
+
+            server.getNodeMap().addNode(node);
+            dynamicFolder.addOrganizes(node);
+        }
+
+
+        // 1 in 10 error
+        {
+            String name = "oneIn10";
+            NodeId typeId = Identifiers.Double;
+            Variant variant = new Variant(1.0);
+
+            UaVariableNode node = new UaVariableNode.UaVariableNodeBuilder(server.getNodeMap())
+                    .setNodeId(new NodeId(namespaceIndex, "HelloWorld/Dynamic/" + name))
+                    .setAccessLevel(ubyte(AccessLevel.getMask(AccessLevel.READ_WRITE)))
+                    .setBrowseName(new QualifiedName(namespaceIndex, name))
+                    .setDisplayName(LocalizedText.english(name))
+                    .setDataType(typeId)
+                    .setTypeDefinition(Identifiers.BaseDataVariableType)
+                    .build();
+
+            node.setValue(new DataValue(variant));
+
+            AttributeDelegate delegate = AttributeDelegateChain.create(
+                    new AttributeDelegate() {
+                        @Override
+                        public DataValue getValue(AttributeContext context, VariableNode node) throws UaException {
+                            double nextValue = random.nextDouble() / 10 + (random.nextDouble() < 0.1 ? 0.9 : 0);
+                            return new DataValue(new Variant(nextValue));
+                        }
+                    },
+                    ValueLoggingDelegate::new
+            );
+
+            node.setAttributeDelegate(delegate);
+
+            server.getNodeMap().addNode(node);
+            dynamicFolder.addOrganizes(node);
+        }
+
+        // Noise Floor
+        {
+            String name = "noiseFloor";
+            NodeId typeId = Identifiers.Double;
+            Variant variant = new Variant(1.0);
+
+            UaVariableNode node = new UaVariableNode.UaVariableNodeBuilder(server.getNodeMap())
+                    .setNodeId(new NodeId(namespaceIndex, "HelloWorld/Dynamic/" + name))
+                    .setAccessLevel(ubyte(AccessLevel.getMask(AccessLevel.READ_WRITE)))
+                    .setBrowseName(new QualifiedName(namespaceIndex, name))
+                    .setDisplayName(LocalizedText.english(name))
+                    .setDataType(typeId)
+                    .setTypeDefinition(Identifiers.BaseDataVariableType)
+                    .build();
+
+            node.setValue(new DataValue(variant));
+
+            AttributeDelegate delegate = AttributeDelegateChain.create(
+                    new AttributeDelegate() {
+                        @Override
+                        public DataValue getValue(AttributeContext context, VariableNode node) throws UaException {
+                            double nextValue = random.nextDouble() / 10;
+                            return new DataValue(new Variant(nextValue));
+                        }
+                    },
+                    ValueLoggingDelegate::new
             );
 
             node.setAttributeDelegate(delegate);
